@@ -10,6 +10,7 @@ using System.Windows.Forms;
 using System.Net;
 using System.Threading;
 using System.IO;
+using Microsoft.Win32;
 
 
 
@@ -44,7 +45,7 @@ namespace autologin
 
                 but_quit.Enabled = true;
                 but_login.Text = "刷新登陆";
-                but_class.Enabled = true;
+                //but_class.Enabled = true;
                 text_username.Enabled = false;
                 text_passwd.Enabled = false;
 
@@ -109,8 +110,6 @@ namespace autologin
 
                 keyword getkey = new keyword();
                 getkey.ReaderSave = readersave;
-                text_keywords.Text = getkey.findkeyword(48);
-
                 System.IO.StreamWriter file = new StreamWriter(@"d:\test.txt");
                 file.WriteLine(reader.ReadToEnd());                               
                 file.Close();
@@ -143,15 +142,30 @@ namespace autologin
             but_login.Enabled = true;
         }
 
+        private void WebBrowser1_BeforeNavigate(object pDisp,ref object URL,ref object Flags, ref object TargetFramName,
+                ref object PostDate,ref object Headers,ref bool Cancel)
+        {
+            if (PostDate != null)
+            {
+                richText_POST.Text = System.Text.Encoding.ASCII.GetString(PostDate as byte[]);
+                MessageBox.Show("已捕获一个可能的选课数据");
+                List_classChoiced.Items.Add("数据1");
+            }
+        }
         private void Form1_Load(object sender, EventArgs e)
         {
             string keysa;
             but_quit.Enabled = false;
             but_class.Enabled = false;
-           // text_keywords.Enabled = false;
             text_website.Enabled = false;
-
+            
+            richText_POST.Multiline = false;
+            richText_POST.Enabled = false;
+            
         
+
+            
+
 
             try
             {
@@ -175,13 +189,46 @@ namespace autologin
 
             string sUrl = "http://jwc1.usst.edu.cn";
             webBrowser1.Navigate(sUrl);
+            ///加入对post数据的提取
+            SHDocVw.WebBrowser wb = (SHDocVw.WebBrowser)webBrowser1.ActiveXInstance;
+            wb.BeforeNavigate2 += new SHDocVw.DWebBrowserEvents2_BeforeNavigate2EventHandler(WebBrowser1_BeforeNavigate);
+            //结束定义
+            
             function = 3;
             this.webBrowser1.DocumentCompleted += new WebBrowserDocumentCompletedEventHandler(webBrowser1_DocumentCompleted);
-             System.Threading.Thread.Sleep(1500);
+             //System.Threading.Thread.Sleep(1500);
+
+             RegistryKey myReg1, myReg2;//声明注册表对象
+             myReg1 = Registry.CurrentUser;//获取当前用户注册表项
+             try
+             {
+                 myReg2 = myReg1.CreateSubKey("Software\\MySoft");//在注册表项中创建子项
+                 this.Location = new Point(Convert.ToInt16(myReg2.GetValue("1")), Convert.ToInt16(myReg2.GetValue("2")));//设置窗体的显示位置
+                 if (myReg2.GetValue("3") != null && myReg2.GetValue("4") != null)
+                 {
+                     this.Width = Convert.ToInt16(myReg2.GetValue("3"));
+                     this.Height = Convert.ToInt16(myReg2.GetValue("4"));
+                 }
+             }
+             catch { }
+
         }
 
-                         
-
+        private void Form_main_FormClosing(object sender, FormClosedEventArgs e)
+        {
+            RegistryKey myReg1, myReg2;//声明注册表对象
+            myReg1 = Registry.CurrentUser;//获取当前用户注册表项
+            myReg2 = myReg1.CreateSubKey("Software\\MySoft");//在注册表项中创建子项
+            try
+            {
+                myReg2.SetValue("1", this.Location.X.ToString());//将窗体关闭位置的x坐标写入注册表
+                myReg2.SetValue("2", this.Location.Y.ToString());//将窗体关闭位置的y坐标写入注册表
+                myReg2.SetValue("3", this.Width.ToString());
+                myReg2.SetValue("4", this.Height.ToString());
+            }
+            catch { }
+        }
+              
 
         private void but_class_Click_1(object sender, EventArgs e)
         {
@@ -222,5 +269,88 @@ namespace autologin
         {
             but_save.Enabled = true;
         }
-    }
+
+        private void button_post_Click(object sender, EventArgs e)
+        {
+            for(int i=0;i<List_classChoiced.Items.Count;i++)
+            {
+
+            }
+        }
+    
+        #region 同步通过POST方式发送数据
+        /// <summary>
+        /// 通过POST方式发送数据
+        /// </summary>
+        /// <param name="Url">url</param>
+        /// <param name="postDataStr">Post数据</param>
+        /// <param name="cookie">Cookie容器</param>
+        /// <returns></returns>
+        public string SendDataByPost(string Url,string postDataStr,ref CookieContainer cookie)
+        {
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(Url);
+            if (cookie.Count == 0)
+            {
+                request.CookieContainer = new CookieContainer();
+                cookie = request.CookieContainer;
+            }
+            else
+            {
+                request.CookieContainer = cookie;
+            }
+
+            request.Method = "POST";
+            request.ContentType = "application/x-www-form-urlencoded";
+            request.ContentLength = postDataStr.Length;
+            Stream myRequestStream = request.GetRequestStream();
+            StreamWriter myStreamWriter = new StreamWriter(myRequestStream, Encoding.GetEncoding("gb2312"));
+            myStreamWriter.Write(postDataStr);
+            myStreamWriter.Close();
+
+            HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+            Stream myResponseStream = response.GetResponseStream();
+            StreamReader myStreamReader = new StreamReader(myResponseStream, Encoding.GetEncoding("utf-8"));
+            string retString= myStreamReader.ReadToEnd();
+            myStreamReader.Close();
+            myResponseStream.Close();
+
+            return retString;
+        }
+        #endregion
+
+        #region 同步通过GET方式发送数据
+        /// <summary>
+        /// 通过GET方式发送数据
+        /// </summary>
+        /// <param name="Url">url</param>
+        /// <param name="postDataStr">GET数据</param>
+        /// <param name="cookie">GET容器</param>
+        /// <returns></returns>
+        public string SendDataByGET(string Url, string postDataStr, ref CookieContainer cookie)
+        {
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(Url +( postDataStr == "" ? "" : "?") + postDataStr);
+            if (cookie.Count == 0)
+            {
+                request.CookieContainer = new CookieContainer();
+                cookie = request.CookieContainer;
+            }
+            else
+            {
+                request.CookieContainer = cookie;
+            }
+
+            request.Method = "GET";
+            request.ContentType = "text/html;charset=UTF-8";
+            
+            HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+            Stream myResponseStream = response.GetResponseStream();
+            StreamReader myStreamReader = new StreamReader(myResponseStream, Encoding.GetEncoding("utf-8"));
+            string retString = myStreamReader.ReadToEnd();
+            myStreamReader.Close();
+            myResponseStream.Close();
+
+            return retString;
+        }
+        #endregion
+}
 }
