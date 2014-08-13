@@ -11,6 +11,7 @@ using System.Net;
 using System.Threading;
 using System.IO;
 using Microsoft.Win32;
+using System.Runtime.InteropServices;
 
 
 
@@ -21,7 +22,10 @@ namespace autologin
     {
         int function=0;
         string url_box="";
-        Cookie cookieSave;
+        int order=0;
+        string[] postUrls = new string[50];
+        string[] postDate = new string[50];
+        CookieContainer cookieSave=new CookieContainer();
         IsRight check_str = new IsRight();
         public Form_main()
         {
@@ -48,18 +52,20 @@ namespace autologin
                 //but_class.Enabled = true;
                 text_username.Enabled = false;
                 text_passwd.Enabled = false;
+                button_postclass.Enabled = true;
 
+                ///保存cookie
+                ///保存到cookiesave 后面的but_post中使用
                 CookieContainer myCookie = new CookieContainer();
                 string cookieStr = webBrowser1.Document.Cookie;
+                richText_return.Text = cookieStr;
                 string[] cookiestr = cookieStr.Split(';');
-
-
                 foreach (string str in cookiestr)
                 {
                     string[] cookieNameValue = str.Split('=');
                     Cookie ck = new Cookie(cookieNameValue[0].Trim().ToString(), cookieNameValue[1].Trim().ToString());
                     ck.Domain = "jwc1.usst.edu.cn";
-                    cookieSave = ck;
+                    cookieSave.Add(ck);
 
 
                 }
@@ -68,9 +74,23 @@ namespace autologin
             }
             
         }
-
+        private void webBrowser1_NewWindow(object sender, CancelEventArgs e)
+        {
+            e.Cancel = true;
+        }
         private void webBrowser1_DocumentCompleted(object sender, WebBrowserDocumentCompletedEventArgs e)
         {
+            //将所有的链接的目标，指向本窗体
+            foreach (HtmlElement archor in this.webBrowser1.Document.Links)
+            {
+                archor.SetAttribute("target", "_self");
+            }
+
+            //将所有的FORM的提交目标，指向本窗体
+            foreach (HtmlElement form in this.webBrowser1.Document.Forms)
+            {
+                form.SetAttribute("target", "_self");
+            }
            if(function==1)//login
            {
                
@@ -87,7 +107,7 @@ namespace autologin
 
 
             }
-           if(function==2)//post
+           if(function==2)//退出
            {
               
                HtmlElement btLogin = webBrowser1.Document.GetElementById("likTc");
@@ -103,6 +123,7 @@ namespace autologin
             {
                 url_box = webBrowser1.Document.Url.ToString();
                 text_website.Text = url_box;
+                /*
                 WebRequest req = WebRequest.Create(url_box);
                 WebResponse resp = req.GetResponse();
                 StreamReader reader = new StreamReader(resp.GetResponseStream(), Encoding.UTF8);
@@ -113,11 +134,13 @@ namespace autologin
                 System.IO.StreamWriter file = new StreamWriter(@"d:\test.txt");
                 file.WriteLine(reader.ReadToEnd());                               
                 file.Close();
+                 */
             }
             if(function==4)
             {
                 function = 3;
-                HtmlDocument total = webBrowser1.Document;
+
+                
 
 
                 
@@ -145,11 +168,18 @@ namespace autologin
         private void WebBrowser1_BeforeNavigate(object pDisp,ref object URL,ref object Flags, ref object TargetFramName,
                 ref object PostDate,ref object Headers,ref bool Cancel)
         {
+            byte[] post;
             if (PostDate != null)
             {
-                richText_POST.Text = System.Text.Encoding.ASCII.GetString(PostDate as byte[]);
-                MessageBox.Show("已捕获一个可能的选课数据");
-                List_classChoiced.Items.Add("数据1");
+                post = PostDate as byte[];
+                
+                postUrls[order] = URL.ToString();
+                postDate[order] = System.Text.Encoding.ASCII.GetString(PostDate as byte[]);
+                textorder.Text = order.ToString();
+                order += 1;
+                richText_POST.Text = postDate[order - 1];
+               // MessageBox.Show("已捕获一个可能的选课数据");
+                richText_return.Text = Headers.ToString() + post.Length;
             }
         }
         private void Form1_Load(object sender, EventArgs e)
@@ -161,7 +191,7 @@ namespace autologin
             
             richText_POST.Multiline = false;
             richText_POST.Enabled = false;
-            
+            button_postclass.Enabled = false;
         
 
             
@@ -234,9 +264,8 @@ namespace autologin
         {
             //选课按键
             function = 3;
-            //string sUrl = "http://jwc1.usst.edu.cn/xskbcx.aspx?xh=1112030225&xm=吴沛林&gnmkdm=N121603";
-            //webBrowser1.Navigate(sUrl);
-            //this.webBrowser1.DocumentCompleted += new WebBrowserDocumentCompletedEventHandler(webBrowser1_DocumentCompleted);
+            
+            
         }
 
         private void but_save_Click(object sender, EventArgs e)
@@ -272,10 +301,19 @@ namespace autologin
 
         private void button_post_Click(object sender, EventArgs e)
         {
+            /*
             for(int i=0;i<List_classChoiced.Items.Count;i++)
             {
-
+                if (List_classChoiced.GetItemChecked(i))
+                {
+                    if(i==1)
+                        richText_return.Text = SendDataByPost(postUrl[i], richText_POST.Text.ToString().Trim());
+                    //richText_return.Text = SendDataByPost(text_website.Text.ToString(), richText_POST.Text.ToString());
+                }
             }
+             */
+
+            richText_return.Text = SendDataByPost(postUrls[int.Parse(textorder.Text)], postDate[int.Parse(textorder.Text)]);
         }
     
         #region 同步通过POST方式发送数据
@@ -286,8 +324,10 @@ namespace autologin
         /// <param name="postDataStr">Post数据</param>
         /// <param name="cookie">Cookie容器</param>
         /// <returns></returns>
-        public string SendDataByPost(string Url,string postDataStr,ref CookieContainer cookie)
+        public string SendDataByPost(string Url,string postDataStr)
         {
+             CookieContainer cookie=new CookieContainer();
+            // cookie = cookieSave;
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(Url);
             if (cookie.Count == 0)
             {
@@ -299,58 +339,61 @@ namespace autologin
                 request.CookieContainer = cookie;
             }
 
-            request.Method = "POST";
-            request.ContentType = "application/x-www-form-urlencoded";
-            request.ContentLength = postDataStr.Length;
-            Stream myRequestStream = request.GetRequestStream();
-            StreamWriter myStreamWriter = new StreamWriter(myRequestStream, Encoding.GetEncoding("gb2312"));
-            myStreamWriter.Write(postDataStr);
-            myStreamWriter.Close();
+            string retString = "";
+            try
+            {
+                request.Method = "POST";
+                request.ContentType = "application/x-www-form-urlencoded";
 
-            HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-            Stream myResponseStream = response.GetResponseStream();
-            StreamReader myStreamReader = new StreamReader(myResponseStream, Encoding.GetEncoding("utf-8"));
-            string retString= myStreamReader.ReadToEnd();
-            myStreamReader.Close();
-            myResponseStream.Close();
+                request.ContentLength = postDataStr.Length;
+                Stream myRequestStream = request.GetRequestStream();
+                StreamWriter myStreamWriter = new StreamWriter(myRequestStream, Encoding.GetEncoding("gb2312"));
+                myStreamWriter.Write(postDataStr);
+                myStreamWriter.Close();
+                HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+                Stream myResponseStream = response.GetResponseStream();
+                StreamReader myStreamReader = new StreamReader(myResponseStream, Encoding.GetEncoding("gb2312"));
+                 retString = myStreamReader.ReadToEnd();
+                myStreamReader.Close();
+                myResponseStream.Close();
+                return retString;
+            }
+            catch(WebException ex)
+            {
+                HttpWebResponse res = ex.Response as HttpWebResponse;
 
-            return retString;
+                if (res.StatusCode == HttpStatusCode.InternalServerError)
+                {
+                    Stream s = res.GetResponseStream();
+                    StreamReader objReader = new StreamReader(s, Encoding.GetEncoding("gb2312"));
+                    retString = objReader.ReadToEnd();
+                    objReader.Close();
+                }
+                else
+                {
+                    retString = ex.Message;
+                }
+                return retString;
+            }
+
         }
         #endregion
 
-        #region 同步通过GET方式发送数据
-        /// <summary>
-        /// 通过GET方式发送数据
-        /// </summary>
-        /// <param name="Url">url</param>
-        /// <param name="postDataStr">GET数据</param>
-        /// <param name="cookie">GET容器</param>
-        /// <returns></returns>
-        public string SendDataByGET(string Url, string postDataStr, ref CookieContainer cookie)
+
+
+        private void but_add_Click(object sender, EventArgs e)
         {
-            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(Url +( postDataStr == "" ? "" : "?") + postDataStr);
-            if (cookie.Count == 0)
-            {
-                request.CookieContainer = new CookieContainer();
-                cookie = request.CookieContainer;
-            }
-            else
-            {
-                request.CookieContainer = cookie;
-            }
-
-            request.Method = "GET";
-            request.ContentType = "text/html;charset=UTF-8";
-            
-            HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-            Stream myResponseStream = response.GetResponseStream();
-            StreamReader myStreamReader = new StreamReader(myResponseStream, Encoding.GetEncoding("utf-8"));
-            string retString = myStreamReader.ReadToEnd();
-            myStreamReader.Close();
-            myResponseStream.Close();
-
-            return retString;
+            List_classChoiced.Items.Add(richText_POST.Text);
         }
-        #endregion
+
+        private void richText_POST_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void button_back_Click(object sender, EventArgs e)
+        {
+            webBrowser1.GoBack();
+        }
 }
 }

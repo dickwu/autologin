@@ -43,7 +43,11 @@
             this.label5 = new System.Windows.Forms.Label();
             this.richText_POST = new System.Windows.Forms.RichTextBox();
             this.List_classChoiced = new System.Windows.Forms.CheckedListBox();
-            this.button_post = new System.Windows.Forms.Button();
+            this.button_postclass = new System.Windows.Forms.Button();
+            this.but_add = new System.Windows.Forms.Button();
+            this.richText_return = new System.Windows.Forms.RichTextBox();
+            this.textorder = new System.Windows.Forms.TextBox();
+            this.button_back = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // label1
@@ -60,8 +64,6 @@
             // 
             // text_username
             // 
-            this.text_username.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
             this.text_username.Location = new System.Drawing.Point(46, 6);
             this.text_username.Name = "text_username";
             this.text_username.Size = new System.Drawing.Size(123, 21);
@@ -80,13 +82,12 @@
             // 
             // webBrowser1
             // 
-            this.webBrowser1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
+            this.webBrowser1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.webBrowser1.Location = new System.Drawing.Point(-1, 99);
+            this.webBrowser1.Location = new System.Drawing.Point(-1, 132);
             this.webBrowser1.MinimumSize = new System.Drawing.Size(20, 20);
             this.webBrowser1.Name = "webBrowser1";
-            this.webBrowser1.Size = new System.Drawing.Size(1241, 506);
+            this.webBrowser1.Size = new System.Drawing.Size(1241, 473);
             this.webBrowser1.TabIndex = 3;
             this.webBrowser1.DocumentCompleted += new System.Windows.Forms.WebBrowserDocumentCompletedEventHandler(this.webBrowser1_DocumentCompleted);
             // 
@@ -103,8 +104,6 @@
             // 
             // text_passwd
             // 
-            this.text_passwd.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
             this.text_passwd.Location = new System.Drawing.Point(46, 43);
             this.text_passwd.Name = "text_passwd";
             this.text_passwd.PasswordChar = '*';
@@ -137,13 +136,11 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.text_website.Location = new System.Drawing.Point(212, 72);
             this.text_website.Name = "text_website";
-            this.text_website.Size = new System.Drawing.Size(999, 21);
+            this.text_website.Size = new System.Drawing.Size(1028, 21);
             this.text_website.TabIndex = 8;
             // 
             // but_class
             // 
-            this.but_class.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
             this.but_class.Location = new System.Drawing.Point(212, 4);
             this.but_class.Name = "but_class";
             this.but_class.Size = new System.Drawing.Size(75, 23);
@@ -154,8 +151,6 @@
             // 
             // but_save
             // 
-            this.but_save.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
             this.but_save.Location = new System.Drawing.Point(212, 41);
             this.but_save.Name = "but_save";
             this.but_save.Size = new System.Drawing.Size(75, 21);
@@ -181,38 +176,77 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.richText_POST.Location = new System.Drawing.Point(58, 611);
             this.richText_POST.Name = "richText_POST";
-            this.richText_POST.Size = new System.Drawing.Size(1182, 25);
+            this.richText_POST.Size = new System.Drawing.Size(1057, 25);
             this.richText_POST.TabIndex = 14;
             this.richText_POST.Text = "";
+            this.richText_POST.TextChanged += new System.EventHandler(this.richText_POST_TextChanged);
             // 
             // List_classChoiced
             // 
             this.List_classChoiced.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.List_classChoiced.FormattingEnabled = true;
-            this.List_classChoiced.Location = new System.Drawing.Point(293, 4);
+            this.List_classChoiced.Location = new System.Drawing.Point(-1, 106);
             this.List_classChoiced.Name = "List_classChoiced";
-            this.List_classChoiced.Size = new System.Drawing.Size(288, 52);
+            this.List_classChoiced.Size = new System.Drawing.Size(1241, 20);
             this.List_classChoiced.TabIndex = 15;
             // 
-            // button_post
+            // button_postclass
             // 
-            this.button_post.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.button_post.Location = new System.Drawing.Point(600, 33);
-            this.button_post.Name = "button_post";
-            this.button_post.Size = new System.Drawing.Size(75, 23);
-            this.button_post.TabIndex = 16;
-            this.button_post.Text = "开始选课";
-            this.button_post.UseVisualStyleBackColor = true;
-            this.button_post.Click += new System.EventHandler(this.button_post_Click);
+            this.button_postclass.Location = new System.Drawing.Point(304, 4);
+            this.button_postclass.Name = "button_postclass";
+            this.button_postclass.Size = new System.Drawing.Size(75, 23);
+            this.button_postclass.TabIndex = 16;
+            this.button_postclass.Text = "开始选课";
+            this.button_postclass.UseVisualStyleBackColor = true;
+            this.button_postclass.Click += new System.EventHandler(this.button_post_Click);
+            // 
+            // but_add
+            // 
+            this.but_add.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.but_add.Location = new System.Drawing.Point(1121, 609);
+            this.but_add.Name = "but_add";
+            this.but_add.Size = new System.Drawing.Size(108, 23);
+            this.but_add.TabIndex = 17;
+            this.but_add.Text = "添加到抢课列表";
+            this.but_add.UseVisualStyleBackColor = true;
+            this.but_add.Click += new System.EventHandler(this.but_add_Click);
+            // 
+            // richText_return
+            // 
+            this.richText_return.Location = new System.Drawing.Point(385, 6);
+            this.richText_return.Name = "richText_return";
+            this.richText_return.Size = new System.Drawing.Size(481, 54);
+            this.richText_return.TabIndex = 18;
+            this.richText_return.Text = "";
+            // 
+            // textorder
+            // 
+            this.textorder.Location = new System.Drawing.Point(304, 43);
+            this.textorder.Name = "textorder";
+            this.textorder.Size = new System.Drawing.Size(75, 21);
+            this.textorder.TabIndex = 19;
+            // 
+            // button_back
+            // 
+            this.button_back.Location = new System.Drawing.Point(1139, 46);
+            this.button_back.Name = "button_back";
+            this.button_back.Size = new System.Drawing.Size(75, 23);
+            this.button_back.TabIndex = 20;
+            this.button_back.Text = "后退";
+            this.button_back.UseVisualStyleBackColor = true;
+            this.button_back.Click += new System.EventHandler(this.button_back_Click);
             // 
             // Form_main
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1241, 632);
-            this.Controls.Add(this.button_post);
+            this.Controls.Add(this.button_back);
+            this.Controls.Add(this.textorder);
+            this.Controls.Add(this.richText_return);
+            this.Controls.Add(this.but_add);
+            this.Controls.Add(this.button_postclass);
             this.Controls.Add(this.List_classChoiced);
             this.Controls.Add(this.richText_POST);
             this.Controls.Add(this.label5);
@@ -253,7 +287,11 @@
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.RichTextBox richText_POST;
         private System.Windows.Forms.CheckedListBox List_classChoiced;
-        private System.Windows.Forms.Button button_post;
+        private System.Windows.Forms.Button button_postclass;
+        private System.Windows.Forms.Button but_add;
+        private System.Windows.Forms.RichTextBox richText_return;
+        private System.Windows.Forms.TextBox textorder;
+        private System.Windows.Forms.Button button_back;
     }
 }
 
